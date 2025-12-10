@@ -64,3 +64,52 @@ exports.mostrarProductos = async (req, res, next) =>{
         next();
     }
 }
+
+//Muestra un producto en especifico por su ID
+exports.mostrarProducto = async(req, res, next)=>{
+    const producto = await Productos.findById(req.params.idProducto);
+    if (!producto) {
+      res.json({mensaje: 'Ese producto no existe'})  
+       return next();
+    } 
+    //Mostrar el producto
+    res.json(producto);
+}
+
+//Actualizar un producto via ID
+exports.actualizarProducto = async(req, res, next) => {
+    try {
+
+        //Construir un nuevo producto
+        let nuevoProducto = req.body;
+
+        //Verifcar si hay una imagen nueva
+        if (req.file) {
+            nuevoProducto.imagen = req.file.filename;
+        } else {
+            let productoAnterior = await Productos.findById(req.params.idProducto);
+            nuevoProducto.imagen = productoAnterior.imagen;
+        }
+
+        let producto = await Productos.findOneAndUpdate({ _id : req.params.idProducto},
+            nuevoProducto, {
+                new : true,
+            });
+            res.json(producto);
+        
+    } catch (error) {
+        console.log(error);
+        next();
+    }
+}
+
+//Eliminar un producto via ID
+exports.eliminarProducto = async(req, res, next) =>{
+    try {
+        await Productos.findOneAndDelete({_id : req.params.idProducto});
+        res.json({mensaje: 'El producto se ha eliminado'});
+    } catch (error) {
+        console.log(error);
+        next();
+    }
+}
